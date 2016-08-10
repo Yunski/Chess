@@ -11,7 +11,6 @@ import SpriteKit
 
 class BoardViewController: UIViewController {
     static let storyboardIdentifier = "BoardViewController"
-    weak var delegate: BoardViewControllerDelegate?
     var scene: BoardScene!
     var game: Game!
     @IBOutlet var moveButton: UIButton!
@@ -38,10 +37,5 @@ class BoardViewController: UIViewController {
     }
     
     @IBAction func makeMove(_ sender: UIButton) {
-        delegate?.makeMoveAndSend(game)
     }
-}
-
-protocol BoardViewControllerDelegate: class {
-    func makeMoveAndSend(_ game: Game)
 }

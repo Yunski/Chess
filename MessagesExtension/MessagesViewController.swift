@@ -84,58 +84,6 @@ class MessagesViewController: MSMessagesAppViewController {
     private func instantiateBoardViewController(with game: Game) -> UIViewController {
         guard let controller = storyboard?.instantiateViewController(withIdentifier: BoardViewController.storyboardIdentifier) as? BoardViewController else { fatalError("unable to instantiate BoardViewController") }
         controller.game = game
-        controller.delegate = self
         return controller
-    }
-}
-
-extension MessagesViewController: BoardViewControllerDelegate {
-    func makeMoveAndSend(_ game: Game) {
-        guard let conversation = activeConversation else {
-            fatalError("Expected active conversation")
-        }
-        var boardString = ""
-        for p in game.board {
-            boardString += p
-        }
-        var components = URLComponents()
-        var queryItems = [URLQueryItem]()
-        let queryItemBoard = URLQueryItem(name: "board", value: boardString)
-        let color = game.color == 0 ? 1 : 0
-        let queryItemColor = URLQueryItem(name: "color", value: String(color))
-        let complete = game.isComplete == false ? 0 : 1
-        let queryItemComplete = URLQueryItem(name: "complete", value: String(complete))
-        let historyString = game.history.joined(separator: "|")
-        let queryItemHistory = URLQueryItem(name: "history", value: historyString)
-        queryItems.append(queryItemBoard)
-        queryItems.append(queryItemColor)
-        queryItems.append(queryItemComplete)
-        queryItems.append(queryItemHistory)
-        components.queryItems = queryItems
-        
-        let layout = MSMessageTemplateLayout()
-        let gameImage = game.renderImage()
-        layout.image = gameImage
-        layout.caption = game.caption
-        if game.isComplete {
-            let fileManager = FileManager.default
-            let stickersURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent("stickers")
-            let timeStamp = DateFormatter.localizedString(from: Date(), dateStyle: .short, timeStyle: .none)
-            let fileURL = stickersURL.appendingPathComponent("\(timeStamp.replacingOccurrences(of: "/", with: "+"))_\(game.result!).png")
-            let data = UIImagePNGRepresentation(gameImage)
-            let success = fileManager.createFile(atPath: fileURL.path, contents: data, attributes: nil)
-            if success { print("created sticker for game") }
-        }
-        let message = MSMessage(session: conversation.selectedMessage?.session ?? MSSession())
-        message.layout = layout
-        message.url = components.url!
-        
-        conversation.insert(message, completionHandler: { error in
-            if let error = error {
-                print(error)
-            }
-        })
-        
-        dismiss()
     }
 }
